@@ -1,11 +1,15 @@
-# main.py
+# user_router
 from typing import List
 from uuid import uuid4
-from fastapi import FastAPI
-from models import Gender, Role, User, UpdateUser
+from fastapi import APIRouter
+from myfastapi.models import Gender, Role, User, UpdateUser
 from uuid import UUID
 from fastapi import HTTPException
-app = FastAPI()
+
+
+users_router = APIRouter()
+
+
 db: List[User] = [
     User(
         id=uuid4(),
@@ -29,6 +33,7 @@ db: List[User] = [
         roles=[Role.user],
     ),
     User(
+
         id=uuid4(),
         first_name="nam",
         last_name="tran",
@@ -36,26 +41,31 @@ db: List[User] = [
         roles=[Role.admin, Role.user],
     ),
 ]
-@app.get("/")
-async def root():
-    return {"Hello World",}
-@app.get("/api/v1/users")
+
+
+@users_router.get("/users/")
 async def get_users():
     return db
-@app.post("/api/v1/users")
+
+
+@users_router.post("/users/")
 async def create_user(user: User):
     db.append(user)
     return {"id": user.id}
-@app.delete("/api/v1/users/{id}")
+
+
+@users_router.delete("/users/{id}/")
 async def delete_user(id: UUID):
     for user in db:
         if user.id == id:
             db.remove(user)
-            return
+            return user.id
     raise HTTPException(
             status_code=404, detail=f"Delete user failed, id {id} not found."
         )
-@app.put("/api/v1/users/{id}")
+
+
+@users_router.put("/users/{id}/")
 async def update_user(user_update: UpdateUser, id: UUID):
     for user in db:
         if user.id == id:
@@ -66,4 +76,5 @@ async def update_user(user_update: UpdateUser, id: UUID):
             if user_update.roles is not None:
                 user.roles = user_update.roles
             return user.id
-    raise HTTPException(status_code=404, detail=f"Could not find user with id: {id}")
+    raise HTTPException(status_code=404,
+                        detail=f"Could not find user with id: {id}")
